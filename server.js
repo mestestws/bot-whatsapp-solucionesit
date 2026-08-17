@@ -1,11 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
 
 const app = express();
 
-// Configuración de seguridad (CORS) permitiendo TODO para que no te bloquee
+// Configuración de seguridad (CORS)
 app.use(cors({
     origin: '*', 
     methods: ['GET', 'POST']
@@ -51,4 +50,6 @@ app.post('/enviar-mensaje', async (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log(`🚀 Servidor en http://localhost:3000`));
+// MODIFICACIÓN IMPORTANTE: Usar el puerto que Render asigna automáticamente
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
