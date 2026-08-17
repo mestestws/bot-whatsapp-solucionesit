@@ -1,55 +1,21 @@
-const express = require('express');
-const cors = require('cors');
-const { Client, LocalAuth } = require('whatsapp-web.js');
-
-const app = express();
-
-// Configuración de seguridad (CORS)
-app.use(cors({
-    origin: '*', 
-    methods: ['GET', 'POST']
-})); 
-
-app.use(express.json()); 
-
-const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
-    }
-});
-
-client.on('qr', (qr) => {
-    const url = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(qr);
-    console.log('\n=================================================');
-    console.log('HAZ CLIC EN ESTE ENLACE PARA VER TU CÓDIGO QR:');
-    console.log(url);
-    console.log('=================================================\n');
-});
-
-client.on('ready', () => {
-    console.log('✅ ¡Conexión exitosa! El bot está listo.');
-});
-
-client.initialize();
-
 app.post('/enviar-mensaje', async (req, res) => {
     const { numero, mensaje } = req.body;
     if (!numero || !mensaje) return res.status(400).json({ error: 'Faltan datos' });
 
     try {
-        const numeroLimpio = numero.replace(/[\s+\-]/g, '');
+        // Limpiamos todo lo que no sea número
+        const numeroLimpio = numero.replace(/\D/g, ''); 
         const numeroDestino = `${numeroLimpio}@c.us`; 
         
+        // Verificamos si el cliente está listo
+        if (!client.info) {
+             return res.status(500).json({ error: 'El bot no ha iniciado sesión, escanea el QR en los logs.' });
+        }
+
         await client.sendMessage(numeroDestino, mensaje);
         res.json({ success: true, message: 'Enviado' });
-        console.log(`✅ Mensaje enviado a ${numeroLimpio}`);
     } catch (error) {
         console.error('❌ Error al enviar:', error);
-        res.status(500).json({ error: 'Error al enviar' });
+        res.status(500).json({ error: error.message }); // Enviamos el error real al navegador
     }
 });
-
-// MODIFICACIÓN IMPORTANTE: Usar el puerto que Render asigna automáticamente
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
