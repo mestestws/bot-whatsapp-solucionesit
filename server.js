@@ -21,10 +21,11 @@ const client = new Client({
 });
 
 client.on('qr', (qr) => {
-    console.log('\n==================================================');
-    console.log('ESCANEA ESTE CÓDIGO QR CON TU WHATSAPP:');
-    console.log('==================================================\n');
-    qrcode.generate(qr, {small: true});
+    const url = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(qr);
+    console.log('\n=================================================');
+    console.log('HAZ CLIC EN ESTE ENLACE PARA VER TU CÓDIGO QR:');
+    console.log(url);
+    console.log('=================================================\n');
 });
 
 client.on('ready', () => {
