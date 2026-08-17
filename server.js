@@ -3,19 +3,19 @@ app.post('/enviar-mensaje', async (req, res) => {
     if (!numero || !mensaje) return res.status(400).json({ error: 'Faltan datos' });
 
     try {
-        // Limpiamos todo lo que no sea número
         const numeroLimpio = numero.replace(/\D/g, ''); 
         const numeroDestino = `${numeroLimpio}@c.us`; 
         
-        // Verificamos si el cliente está listo
-        if (!client.info) {
-             return res.status(500).json({ error: 'El bot no ha iniciado sesión, escanea el QR en los logs.' });
+        // Verificamos si el cliente está conectado
+        if (client.info === undefined) {
+             return res.status(500).json({ error: 'El bot no está conectado. Por favor, escanea el QR en los logs de Render.' });
         }
 
         await client.sendMessage(numeroDestino, mensaje);
         res.json({ success: true, message: 'Enviado' });
     } catch (error) {
         console.error('❌ Error al enviar:', error);
-        res.status(500).json({ error: error.message }); // Enviamos el error real al navegador
+        // AQUÍ ESTÁ EL CAMBIO: Enviamos el mensaje del error al navegador para verlo en pantalla
+        res.status(500).json({ error: error.message || 'Error desconocido' });
     }
 });
